@@ -413,11 +413,7 @@ withCompletionHandler:(void (^)(void))completion {
             [params setObject:callInvite.to forKey:@"call_to"];
         }
 
-         if (error.code == TVOErrorCallCancelledError) {
-             [params setObject:StateDisconnected forKey:@"call_state"];
-          } else {
-             [params setObject:StateRejected forKey:@"call_state"];
-         }
+        [params setObject:StateRejected forKey:@"call_state"];
          
         [self sendEventWithName:@"callInviteCancelled" body:params];
         /*

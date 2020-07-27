@@ -1,5 +1,6 @@
 package com.hoxfon.react.RNTwilioVoice;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -84,6 +85,7 @@ public class CallNotificationManager {
         }
     }
 
+    @SuppressLint("WrongConstant")
     public Intent getLaunchIntent(ReactApplicationContext context,
                                   int notificationId,
                                   CallInvite callInvite,
