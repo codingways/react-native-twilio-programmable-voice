@@ -678,6 +678,10 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
             // params.putString("call_state", "REJECTED");
             activeCallInvite.reject(getReactApplicationContext());
             clearIncomingNotification(activeCallInvite.getCallSid());
+            activeCallInvite = null;
+        }
+        if (activeCall != null) {
+            activeCall = null;
         }
         eventManager.sendEvent(EVENT_CONNECTION_DID_DISCONNECT, params);
     }
@@ -693,6 +697,10 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
             params.putString("call_to",    activeCallInvite.getTo());
             params.putString("call_state", "BUSY");
             clearIncomingNotification(activeCallInvite.getCallSid());
+            activeCallInvite = null;
+        }
+        if (activeCall != null) {
+            activeCall = null;
         }
         eventManager.sendEvent(EVENT_CONNECTION_DID_DISCONNECT, params);
     }
