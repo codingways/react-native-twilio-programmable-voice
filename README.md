@@ -1,5 +1,7 @@
 # react-native-twilio-programmable-voice
 
+https://codebuild.ca-central-1.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiZ2cxZm56enZhdEcxeEtBd1RNUE5HdWhTTEJtOW9UanpiZlA2L3NIYS9EZUZpN0RIVkNNRjJvazVOWDhuRjlGNTNkcHRuZlN1WFJHV2RiZjlXT1JBMVhnPSIsIml2UGFyYW1ldGVyU3BlYyI6IkNhb2JkQzlmd1d4bDVzeE4iLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master
+
 This is a React-Native wrapper for [Twilio Programmable Voice SDK](https://www.twilio.com/voice) which lets you make and receive calls from your React-Native App. This module is not affiliated with nor officially maintained by Twilio, and it is maintained by open source contributors.
 
 ## Twilio Programmable Voice SDK
