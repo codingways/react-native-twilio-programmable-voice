@@ -130,9 +130,15 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
     private HeadsetManager headsetManager;
     private EventManager eventManager;
 
+    private boolean shouldHandleRingtone = false;
+
     public TwilioVoiceModule(ReactApplicationContext reactContext,
-    boolean shouldAskForMicPermission) {
+    boolean shouldAskForMicPermission, boolean shouldHandleRingtone) {
         super(reactContext);
+        this.shouldHandleRingtone = shouldHandleRingtone;
+        if(!this.shouldHandleRingtone) {
+            SoundPoolManager.disabled = true;
+        }
         if (BuildConfig.DEBUG) {
             Voice.setLogLevel(LogLevel.DEBUG);
         } else {
@@ -145,7 +151,6 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
         callNotificationManager = new CallNotificationManager();
         proximityManager = new ProximityManager(reactContext, eventManager);
         headsetManager = new HeadsetManager(eventManager);
-
         notificationManager = (android.app.NotificationManager) reactContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
         /*
@@ -470,7 +475,9 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
             activeCallInvite = intent.getParcelableExtra(INCOMING_CALL_INVITE);
             if (activeCallInvite != null) {
                 callAccepted = false;
-                SoundPoolManager.getInstance(getReactApplicationContext()).playRinging();
+                if(shouldHandleRingtone) {
+                    SoundPoolManager.getInstance(getReactApplicationContext()).playRinging();
+                }
 
                 if (getReactApplicationContext().getCurrentActivity() != null) {
                     Window window = getReactApplicationContext().getCurrentActivity().getWindow();
@@ -498,8 +505,10 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
                 Log.e(TAG, "ACTION_INCOMING_CALL but not active call");
             }
         } else if (intent.getAction().equals(ACTION_CANCEL_CALL_INVITE)) {
-            SoundPoolManager.getInstance(getReactApplicationContext()).stopRinging();
-            if (BuildConfig.DEBUG) {
+            if(shouldHandleRingtone) {
+                SoundPoolManager.getInstance(getReactApplicationContext()).stopRinging();
+            }
+                if (BuildConfig.DEBUG) {
                 Log.d(TAG, "activeCallInvite was cancelled by " + activeCallInvite.getFrom());
             }
             if (!callAccepted) {
@@ -637,7 +646,9 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
     @ReactMethod
     public void accept() {
         callAccepted = true;
-        SoundPoolManager.getInstance(getReactApplicationContext()).stopRinging();
+        if(shouldHandleRingtone) {
+            SoundPoolManager.getInstance(getReactApplicationContext()).stopRinging();
+        }
         if (activeCallInvite != null) {
             if (BuildConfig.DEBUG) {
                 Log.d(TAG, "accept()");
@@ -668,7 +679,9 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
     @ReactMethod
     public void reject() {
         callAccepted = false;
-        SoundPoolManager.getInstance(getReactApplicationContext()).stopRinging();
+        if(shouldHandleRingtone) {
+            SoundPoolManager.getInstance(getReactApplicationContext()).stopRinging();
+        }
         WritableMap params = Arguments.createMap();
         if (activeCallInvite != null) {
             params.putString("call_sid",   activeCallInvite.getCallSid());
@@ -690,7 +703,9 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
     @ReactMethod
     public void ignore() {
         callAccepted = false;
-        SoundPoolManager.getInstance(getReactApplicationContext()).stopRinging();
+        if(shouldHandleRingtone) {
+            SoundPoolManager.getInstance(getReactApplicationContext()).stopRinging();
+        }
         WritableMap params = Arguments.createMap();
         if (activeCallInvite != null) {
             params.putString("call_sid",   activeCallInvite.getCallSid());
