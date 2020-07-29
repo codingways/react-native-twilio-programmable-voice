@@ -490,6 +490,7 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
 
                 // TODO: Check if we can use IMPORTANCE_FOREGROUND_SERVICE.
                 int appImportance = callNotificationManager.getApplicationImportance(getReactApplicationContext());
+                Log.i(TAG, String.format("Current AppImportance during call: %d", callImportance);
                 if (appImportance == RunningAppProcessInfo.IMPORTANCE_FOREGROUND ||
                         appImportance == RunningAppProcessInfo.IMPORTANCE_SERVICE ||
                         appImportance == RunningAppProcessInfo.IMPORTANCE_TOP_SLEEPING) {
