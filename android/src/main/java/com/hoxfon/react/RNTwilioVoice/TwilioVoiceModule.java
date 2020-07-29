@@ -14,6 +14,7 @@ import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.os.Build;
+import android.annotation.SuppressLint;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -467,6 +468,7 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
         // Ignored, required to implement ActivityEventListener for RN 0.33
     }
 
+    @SuppressLint("deprecation") // Allow use of deprecated RunningAppProcessInfo.IMPORTANCE_TOP_SLEEPING_PRE_28
     private void handleIncomingCallIntent(Intent intent) {
         if (intent.getAction().equals(ACTION_INCOMING_CALL)) {
             if (BuildConfig.DEBUG) {
@@ -493,7 +495,8 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
                 Log.i(TAG, String.format("Current AppImportance during call: %d", appImportance));
                 if (appImportance == RunningAppProcessInfo.IMPORTANCE_FOREGROUND ||
                         appImportance == RunningAppProcessInfo.IMPORTANCE_SERVICE ||
-                        appImportance == RunningAppProcessInfo.IMPORTANCE_TOP_SLEEPING) {
+                        appImportance == RunningAppProcessInfo.IMPORTANCE_TOP_SLEEPING ||
+                        appImportance == RunningAppProcessInfo.IMPORTANCE_TOP_SLEEPING_PRE_28) {
 
                     WritableMap params = Arguments.createMap();
                     params.putString("call_sid", activeCallInvite.getCallSid());
