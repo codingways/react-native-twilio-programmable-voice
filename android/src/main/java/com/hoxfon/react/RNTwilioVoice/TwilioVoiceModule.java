@@ -53,6 +53,7 @@ import com.twilio.voice.ConnectOptions;
 import com.twilio.voice.LogLevel;
 import com.twilio.voice.RegistrationException;
 import com.twilio.voice.RegistrationListener;
+import com.twilio.voice.UnregistrationListener;
 import com.twilio.voice.Voice;
 
 import java.util.HashMap;
@@ -119,6 +120,7 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
     static Map<String, Integer> callNotificationMap;
 
     private RegistrationListener registrationListener = registrationListener();
+    private UnregistrationListener unregistrationListener = unregistrationListener();
     private Call.Listener callListener = callListener();
 
     private CallInvite activeCallInvite;
@@ -228,6 +230,23 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
                 params.putString("err", error.getMessage());
                 eventManager.sendEvent(EVENT_DEVICE_NOT_READY, params);
             }
+        };
+    }
+
+    private UnregistrationListener unregistrationListener() {
+        return new UnregistrationListener() {
+        @Override
+        public void onUnregistered(String accessToken, String fcmToken) {
+            if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Successfully unregistered FCM");
+            }
+            eventManager.sendEvent(EVENT_DEVICE_NOT_READY, null);
+        }
+
+        @Override
+        public void onError(RegistrationException error, String accessToken, String fcmToken) {
+            Log.e(TAG, String.format("Unregistration Error: %d, %s", error.getErrorCode(), error.getMessage()));
+        }
         };
     }
 
@@ -601,6 +620,32 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
         }
 
         promise.resolve(params);
+    }
+
+    @ReactMethod
+    public void unregister() {
+      if (accessToken == null) {
+        return;
+      }
+      FirebaseInstanceId.getInstance().getInstanceId()
+        .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+          @Override
+          public void onComplete(@NonNull Task<InstanceIdResult> task) {
+            if (!task.isSuccessful()) {
+              Log.w(TAG, "getInstanceId failed", task.getException());
+              return;
+            }
+
+            // Get new Instance ID token
+            String fcmToken = task.getResult().getToken();
+            if (fcmToken != null) {
+              if (BuildConfig.DEBUG) {
+                Log.d(TAG, "Unregistering with FCM");
+              }
+              Voice.unregister(accessToken, Voice.RegistrationChannel.FCM, fcmToken, unregistrationListener);
+            }
+          }
+        });
     }
 
     private void clearIncomingNotification(String callSid) {
