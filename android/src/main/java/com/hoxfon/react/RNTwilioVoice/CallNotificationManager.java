@@ -19,6 +19,9 @@ import android.service.notification.StatusBarNotification;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
 import android.view.WindowManager;
+import android.media.AudioAttributes;
+import android.media.RingtoneManager;
+import android.net.Uri;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.twilio.voice.CallInvite;
@@ -50,6 +53,7 @@ import static com.hoxfon.react.RNTwilioVoice.TwilioVoiceModule.CLEAR_MISSED_CALL
 public class CallNotificationManager {
 
     private static final String VOICE_CHANNEL = "default";
+    private static final String INCOMING_CALL_VOICE_CHANNEL = "ocp_incoming_call";
 
     private NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
 
@@ -123,6 +127,7 @@ public class CallNotificationManager {
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "createIncomingCallNotification intent "+launchIntent.getFlags());
         }
+        
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -138,19 +143,20 @@ public class CallNotificationManager {
         /*
          * Create the notification shown in the notification drawer
          */
-        initCallNotificationsChannel(notificationManager);
+        initIncomingCallNotificationsChannel(notificationManager);
 
         NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(context, VOICE_CHANNEL)
+                new NotificationCompat.Builder(context, INCOMING_CALL_VOICE_CHANNEL)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                         .setCategory(NotificationCompat.CATEGORY_CALL)
                         .setSmallIcon(R.drawable.ic_call_white_24dp)
                         .setContentTitle("Incoming call")
-                        .setContentText(callInvite.getFrom() + " is calling")
+                        .setContentText("On Call Pass is calling")
                         .setOngoing(true)
                         .setAutoCancel(true)
                         .setExtras(extras)
+                        .setContentIntent(pendingIntent)
                         .setFullScreenIntent(pendingIntent, true);
 
         // build notification large icon
@@ -190,9 +196,31 @@ public class CallNotificationManager {
             return;
         }
         NotificationChannel channel = new NotificationChannel(VOICE_CHANNEL,
-                "Primary Voice Channel", NotificationManager.IMPORTANCE_DEFAULT);
+                "Active and missed calls notifications", NotificationManager.IMPORTANCE_DEFAULT);
         channel.setLightColor(Color.GREEN);
         channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+        notificationManager.createNotificationChannel(channel);
+    }
+
+    public void initIncomingCallNotificationsChannel(NotificationManager notificationManager) {
+        if (Build.VERSION.SDK_INT < 26) {
+            return;
+        }
+        NotificationChannel channel = new NotificationChannel(INCOMING_CALL_VOICE_CHANNEL,
+                "Incoming call notifications", NotificationManager.IMPORTANCE_HIGH);
+        channel.setLightColor(Color.GREEN);
+        channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+
+        // We'll use the default system ringtone for our incoming call notification channel.  You can
+        // use your own audio resource here.
+        Uri ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+        channel.setSound(ringtoneUri, new AudioAttributes.Builder()
+                // Setting the AudioAttributes is important as it identifies the purpose of your
+                // notification sound.
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build());
+
         notificationManager.createNotificationChannel(channel);
     }
 
@@ -233,7 +261,7 @@ public class CallNotificationManager {
                         .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                         .setSmallIcon(R.drawable.ic_call_missed_white_24dp)
                         .setContentTitle("Missed call")
-                        .setContentText(callInvite.getFrom() + " called")
+                        .setContentText("On Call Pass called")
                         .setAutoCancel(true)
                         .setShowWhen(true)
                         .setExtras(extras)
@@ -248,7 +276,7 @@ public class CallNotificationManager {
         } else {
             inboxStyle.setBigContentTitle(String.valueOf(missedCalls) + " missed calls");
         }
-        inboxStyle.addLine("from: " +callInvite.getFrom());
+        inboxStyle.addLine("from: On Call Pass");
         sharedPrefEditor.putInt(MISSED_CALLS_GROUP, missedCalls);
         sharedPrefEditor.commit();
 

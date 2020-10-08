@@ -720,6 +720,25 @@ public class TwilioVoiceModule extends ReactContextBaseJavaModule implements Act
 //                    activeCallInvite.getCallSid(),
 //                    activeCallInvite.getFrom());
 //            eventManager.sendEvent(EVENT_CONNECTION_DID_CONNECT, params);
+
+
+            Context context = getReactApplicationContext();
+            String packageName = context.getApplicationContext().getPackageName();
+            Intent focusIntent = context.getPackageManager().getLaunchIntentForPackage(packageName).cloneFilter();
+            Activity activity = getCurrentActivity();
+            boolean isOpened = activity != null;
+            Log.d(TAG, "backToForeground, app isOpened ?" + (isOpened ? "true" : "false"));
+
+            if (isOpened) {
+                focusIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                activity.startActivity(focusIntent);
+            } else {
+                focusIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK +
+                        WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED +
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
+                context.startActivity(focusIntent);
+            }
         } else {
             eventManager.sendEvent(EVENT_CONNECTION_DID_DISCONNECT, null);
         }
